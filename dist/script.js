@@ -4351,6 +4351,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _modules_checkTextInputs__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./modules/checkTextInputs */ "./src/js/modules/checkTextInputs.js");
 /* harmony import */ var _modules_showMoreStyles__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./modules/showMoreStyles */ "./src/js/modules/showMoreStyles.js");
 /* harmony import */ var _modules_calc__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./modules/calc */ "./src/js/modules/calc.js");
+/* harmony import */ var _modules_filter__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./modules/filter */ "./src/js/modules/filter.js");
 
 
 
@@ -4358,19 +4359,22 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-var modalState = {};
+
 window.addEventListener('DOMContentLoaded', function () {
   'use strict';
 
+  var calcData = {};
+  console.log(calcData);
   Object(_modules_modals__WEBPACK_IMPORTED_MODULE_0__["default"])();
   Object(_modules_sliders__WEBPACK_IMPORTED_MODULE_1__["default"])('.feedback-slider-item', 'horizontal', '.main-prev-btn', '.main-next-btn');
   Object(_modules_sliders__WEBPACK_IMPORTED_MODULE_1__["default"])('.main-slider-item', 'vertical');
-  Object(_modules_forms__WEBPACK_IMPORTED_MODULE_2__["default"])();
+  Object(_modules_forms__WEBPACK_IMPORTED_MODULE_2__["default"])(calcData);
   Object(_modules_mask__WEBPACK_IMPORTED_MODULE_3__["default"])('[name="phone"]');
   Object(_modules_checkTextInputs__WEBPACK_IMPORTED_MODULE_4__["default"])('[name="name"]');
   Object(_modules_checkTextInputs__WEBPACK_IMPORTED_MODULE_4__["default"])('[name="message"]');
   Object(_modules_showMoreStyles__WEBPACK_IMPORTED_MODULE_5__["default"])('.button-styles', '#styles .row');
   Object(_modules_calc__WEBPACK_IMPORTED_MODULE_6__["default"])('#size', '#material', '#options', '.promocode', '.calc-price');
+  Object(_modules_filter__WEBPACK_IMPORTED_MODULE_7__["default"])();
 });
 
 /***/ }),
@@ -4395,37 +4399,43 @@ var calc = function calc(size, material, options, promocode, result) {
       resultBlock = document.querySelector(result);
   var sum = 0,
       sizeValue = '',
-      materialValue = '',
-      optionsValue = '';
+      materialValue = '0',
+      optionsValue = '0';
+  var state;
+  Object(_services_requests__WEBPACK_IMPORTED_MODULE_0__["getResource"])('assets/dbPrice.json').then(function (res) {
+    return state = res;
+  }).catch(function (error) {
+    return console.log(error);
+  });
 
-  var changePram = function changePram(event, elem) {
+  function changePrice(event, elem) {
     elem.addEventListener(event, function (e) {
       var target = e.target,
-          select = e.select;
+          select = target.id;
 
       function calcFunc(state) {
-        for (key in state[select]) {
+        for (var key in state[select]) {
           if (elem.value === key) {
             switch (select) {
               case "size":
-                sizeValue: state[select][key];
+                sizeValue = state[select][key];
+                break;
 
               case "material":
-                materialValue: state[select][key];
+                materialValue = state[select][key];
+                break;
 
               case "options":
-                optionsValue: state[select][key];
+                optionsValue = state[select][key];
+                break;
 
               default:
-                (function () {});
-
+                return function () {};
             }
           }
-
-          console.log(state[select][key]);
         }
 
-        sum = Math.round(+sizeBlock.value * +materialBlock.value + +optionsBlock.value);
+        sum = Math.round(+sizeValue * +materialValue + +optionsValue);
 
         if (sizeBlock.value == '' || materialBlock.value == '') {
           resultBlock.textContent = "Пожалуйта, выберите размер и материал картины";
@@ -4436,18 +4446,15 @@ var calc = function calc(size, material, options, promocode, result) {
         }
       }
 
-      Object(_services_requests__WEBPACK_IMPORTED_MODULE_0__["getResource"])('../../assets/dbPrice.json').then(function (res) {
-        return calcFunc(res);
-      }).catch(function (error) {
-        return console.log(error);
-      });
+      calcFunc(state); // console.log(sizeValue, materialValue, optionsValue)
     });
-  };
+  }
 
-  changePram('change', sizeBlock);
-  changePram('change', materialBlock);
-  changePram('change', optionsBlock);
-  changePram('input', promocodeBlock);
+  ;
+  changePrice('change', sizeBlock);
+  changePrice('change', materialBlock);
+  changePrice('change', optionsBlock);
+  changePrice('input', promocodeBlock);
 };
 
 /* harmony default export */ __webpack_exports__["default"] = (calc);
@@ -4485,6 +4492,68 @@ var checkTextInputs = function checkTextInputs(selector) {
 
 /***/ }),
 
+/***/ "./src/js/modules/filter.js":
+/*!**********************************!*\
+  !*** ./src/js/modules/filter.js ***!
+  \**********************************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! core-js/modules/web.dom-collections.for-each */ "./node_modules/core-js/modules/web.dom-collections.for-each.js");
+/* harmony import */ var core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_0___default = /*#__PURE__*/__webpack_require__.n(core_js_modules_web_dom_collections_for_each__WEBPACK_IMPORTED_MODULE_0__);
+
+
+var filter = function filter() {
+  var menu = document.querySelector('.portfolio-menu'),
+      items = menu.querySelectorAll('li'),
+      wrapper = document.querySelector('.portfolio-wrapper'),
+      markAll = wrapper.querySelectorAll('.all'),
+      no = document.querySelector('.portfolio-no');
+
+  var typeFilter = function typeFilter(markType) {
+    markAll.forEach(function (mark) {
+      mark.style.display = 'none';
+      mark.classList.remove('animated', 'fadeIn');
+    });
+    no.style.display = 'none';
+    no.classList.remove('animated', 'fadeIn');
+
+    if (markType) {
+      markType.forEach(function (mark) {
+        mark.style.display = 'block';
+        mark.classList.add('animated', 'fadeIn');
+      });
+    }
+
+    if (markType.length == 0) {
+      no.style.display = 'block';
+      no.classList.add('animated', 'fadeIn');
+    }
+  };
+
+  menu.addEventListener('click', function (e) {
+    var classSelect = e.target.classList[0];
+    var allElems = wrapper.querySelectorAll(".".concat(classSelect));
+    typeFilter(allElems);
+  });
+  menu.addEventListener('click', function (e) {
+    var target = e.target;
+
+    if (target && target.tagName == 'LI') {
+      items.forEach(function (btn) {
+        return btn.classList.remove('active');
+      });
+      target.classList.add('active');
+    }
+  });
+};
+
+/* harmony default export */ __webpack_exports__["default"] = (filter);
+
+/***/ }),
+
 /***/ "./src/js/modules/forms.js":
 /*!*********************************!*\
   !*** ./src/js/modules/forms.js ***!
@@ -4515,7 +4584,7 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-var forms = function forms() {
+var forms = function forms(state) {
   var form = document.querySelectorAll('form'),
       inputs = document.querySelectorAll('input'),
       upload = document.querySelectorAll('[name="upload"]');
@@ -4569,6 +4638,13 @@ var forms = function forms() {
       textMessage.textContent = message.loading;
       statusMessage.appendChild(textMessage);
       var formData = new FormData(item);
+
+      if (item.getAttribute('data-calc') === 'calc') {
+        for (var key in state) {
+          formData.append(key, state[key]);
+        }
+      }
+
       var api;
       item.closest('.popup-design') || item.classList.contains('calc_form') ? api = path.designer : api = path.question;
       Object(_services_requests__WEBPACK_IMPORTED_MODULE_6__["postData"])(api, formData).then(function (res) {
@@ -4901,13 +4977,13 @@ var sliders = function sliders(slides, dir, prev, next) {
       paused = setInterval(function () {
         plusSlides(1);
         items[slideIndex - 1].classList.add('slideInDown');
-      }, 3000);
+      }, 5000);
     } else {
       paused = setInterval(function () {
         plusSlides(1);
         items[slideIndex - 1].classList.remove('slideInRight');
         items[slideIndex - 1].classList.add('slideInLeft');
-      }, 3000);
+      }, 5000);
     }
   }
 
