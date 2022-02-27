@@ -6,12 +6,13 @@ import checkTextInputs from './modules/checkTextInputs';
 import showMoreStyles from './modules/showMoreStyles';
 import calc from './modules/calc';
 import filter from './modules/filter';
+import pictureSize from './modules/pictureSize';
+import accordion from './modules/accordion';
 
 window.addEventListener('DOMContentLoaded', () => {
 	'use strict';
 
 	let calcData = {};
-	console.log(calcData)
 
 	modals();
 	sliders('.feedback-slider-item', 'horizontal', '.main-prev-btn', '.main-next-btn');
@@ -23,4 +24,6 @@ window.addEventListener('DOMContentLoaded', () => {
 	showMoreStyles('.button-styles', '#styles .row');
 	calc('#size', '#material', '#options', '.promocode', '.calc-price');
 	filter();
+	pictureSize('.sizes-block');
+	accordion('.accordion-heading');
 })
